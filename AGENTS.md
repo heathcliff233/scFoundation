@@ -99,3 +99,34 @@ When modifying architecture/data behavior:
 2. Trace into `model/load.py` and `model/pretrainmodels/*` for model semantics.
 3. Validate gene-order and normalization assumptions against `preprocessing/scRNA_workflow.py`.
 4. Use `model/demo.sh` commands for quick smoke checks after changes.
+
+## 10. Local Core Smoke Run Log (2026-04-07)
+Goal: run the core embedding path (not benchmark tasks) in local cache layout.
+
+Local cache layout:
+- checkpoint: `~/model_cache/scfoundation/models/models.ckpt`
+- gene index copy: `~/model_cache/scfoundation/OS_scRNA_gene_index.19264.tsv`
+- input/output working dir: `~/model_cache/scfoundation`
+
+Checkpoint source note:
+- upstream `model/models/download.txt` points to SharePoint, which may be inaccessible in some environments
+- working fallback mirror used here: `https://huggingface.co/genbio-ai/scFoundation/resolve/main/models.ckpt`
+
+Executed command (from `~/model_cache/scfoundation`):
+```bash
+conda run -n evo2 python /workspace/hongliang/.cline/worktrees/0489e/ecocell/vendor/scFoundation/model/get_embedding.py \
+  --task_name core_smoke \
+  --input_type singlecell \
+  --output_type cell \
+  --pool_type all \
+  --tgthighres t4 \
+  --data_path ./core_smoke_input.csv \
+  --save_path ./out \
+  --pre_normalized F \
+  --version ce \
+  --demo
+```
+
+Observed output artifact:
+- `~/model_cache/scfoundation/out/core_smoke_01B-resolution_singlecell_cell_embedding_t4_resolution.npy`
+- output tensor shape: `(3072,)`
